@@ -1,9 +1,7 @@
-// app/family_login.tsx
 import { router } from 'expo-router';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   Alert,
-  Dimensions,
   FlatList,
   Image,
   ImageBackground,
@@ -14,8 +12,9 @@ import {
   StyleSheet,
   Text,
   TextInput,
-  View,
+  View
 } from 'react-native';
+import { supabase } from '../lib/supabase';
 
 const COLORS = {
   background: '#0e0e0e',
@@ -39,11 +38,9 @@ const COLORS = {
   error: '#ff7351',
 };
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CHAR_SIZE = 72;
 const CHAR_GAP = 12;
 
-// cha1.png ถึง cha21.png
 const CHARACTERS = [
   { id: 1, source: require('../assets/images/cha1.png') },
   { id: 2, source: require('../assets/images/cha2.png') },
@@ -75,123 +72,180 @@ export default function FamilyLoginScreen() {
   const [btnPressed, setBtnPressed] = useState(false);
   const flatListRef = useRef<FlatList>(null);
 
-  function handleQuestStart() {
+  useEffect(() => {
+    checkExistingFamily();
+  }, []);
+
+  async function checkExistingFamily() {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: member, error: memberError } = await supabase
+        .from('family_members')
+        .select('family_id')
+        .eq('user_id', user.id)
+        .single();
+
+      console.log('user.id:', user.id);
+      console.log('member:', JSON.stringify(member));
+      console.log('memberError:', JSON.stringify(memberError));
+
+      if (member?.family_id) {
+        router.replace('/family' as any);
+      }
+    } catch {
+      // ยังไม่มีครอบครัว อยู่หน้านี้ต่อ
+    }
+  }
+
+  async function handleQuestStart() {
     if (!guildCode) {
       Alert.alert('Error', 'กรุณากรอก Secret Family Code');
       return;
     }
-    router.replace('/family' as any);
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('ไม่พบ user');
+
+      // หา family จาก pin_code ตรงๆ
+      const { data: family, error: familyError } = await supabase
+        .from('families')
+        .select('id')
+        .eq('pin_code', guildCode)
+        .single();
+
+      if (familyError || !family) {
+        Alert.alert('Error', 'ไม่พบครอบครัว หรือรหัสไม่ถูกต้อง');
+        return;
+      }
+
+      // insert ลง family_members
+      const { error: joinError } = await supabase
+        .from('family_members')
+        .insert({
+          user_id: user.id,
+          family_id: family.id,
+          member_role: 'member',
+          avatar_key: `cha${selectedChar + 1}`,
+          member_nickname: '',
+        });
+
+      if (joinError) throw joinError;
+
+      router.replace('/family' as any);
+
+    } catch (err: any) {
+      Alert.alert('Error', err.message);
+    }
   }
 
   return (
-  <ImageBackground
-    source={require('../assets/images/dungeonwalkway.png')}
-    style={styles.bg}
-    resizeMode="cover"
-  >
-
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    <ImageBackground
+      source={require('../assets/images/dungeonwalkway.png')}
+      style={styles.bg}
+      resizeMode="cover"
     >
-      <ScrollView
-        contentContainerStyle={styles.scroll}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        {/* Branding */}
-        <View style={styles.brandingBlock}>
-          <View style={styles.catFrame}>
-            <Image
-              source={require('../assets/images/cat.png')}
-              style={styles.catImage}
-              resizeMode="contain"
-            />
-          </View>
-          <Text style={styles.title}>FAMILY START!</Text>
-          <Text style={styles.titleSub}>READY YOUR QUESTING PARTY</Text>
-        </View>
-
-        {/* Main Card */}
-        <View style={styles.card}>
-
-          {/* Select Hero */}
-          <Text style={styles.sectionLabel}>Select Character</Text>
-          <FlatList
-            ref={flatListRef}
-            data={CHARACTERS}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            keyExtractor={(item) => item.id.toString()}
-            contentContainerStyle={styles.charList}
-            ItemSeparatorComponent={() => <View style={{ width: CHAR_GAP }} />}
-            renderItem={({ item, index }) => {
-              const isSelected = selectedChar === index;
-              return (
-                <Pressable onPress={() => setSelectedChar(index)}>
-                  <View style={[styles.charSlot, isSelected && styles.charSlotSelected]}>
-                    <Image
-                      source={item.source}
-                      style={[styles.charImage, !isSelected && styles.charImageDim]}
-                      resizeMode="contain"
-                    />
-                    {isSelected && <View style={styles.charSelectedDot} />}
-                  </View>
-                </Pressable>
-              );
-            }}
-          />
-          {/* character list */}
-          <Text style={styles.scrollHint}>← เลื่อนเพื่อดูตัวละครทั้งหมด →</Text>
-
-          {/* Secret Guild Code */}
-          <View style={styles.fieldGroup}>
-            <Text style={styles.sectionLabel}>Secret family Code</Text>
-            <View style={styles.inputWrapper}>
-              <Text style={styles.inputIcon}>🔑</Text>
-              <TextInput
-                style={[styles.input, codeFocused && styles.inputFocused]}
-                placeholder="••••••••"
-                placeholderTextColor={COLORS.outlineVariant}
-                value={guildCode}
-                onChangeText={setGuildCode}
-                onFocus={() => setCodeFocused(true)}
-                onBlur={() => setCodeFocused(false)}
-                secureTextEntry
-                autoCapitalize="none"
+        <ScrollView
+          contentContainerStyle={styles.scroll}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Branding */}
+          <View style={styles.brandingBlock}>
+            <View style={styles.catFrame}>
+              <Image
+                source={require('../assets/images/cat.png')}
+                style={styles.catImage}
+                resizeMode="contain"
               />
-              <View style={styles.blinkDot} />
             </View>
+            <Text style={styles.title}>FAMILY START!</Text>
+            <Text style={styles.titleSub}>READY YOUR QUESTING PARTY</Text>
           </View>
 
-          {/* Quest Start Button */}
-          <Pressable
-            onPressIn={() => setBtnPressed(true)}
-            onPressOut={() => setBtnPressed(false)}
-            onPress={handleQuestStart}
-          >
-            <View style={styles.btnOuter}>
-              <View style={styles.btnShadowLayer} />
-              <View style={[styles.btn, btnPressed && styles.btnPressed]}>
-                <Text style={styles.btnText}>QUEST START →</Text>
+          {/* Main Card */}
+          <View style={styles.card}>
+
+            {/* Select Character */}
+            <Text style={styles.sectionLabel}>Select Character</Text>
+            <FlatList
+              ref={flatListRef}
+              data={CHARACTERS}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              keyExtractor={(item) => item.id.toString()}
+              contentContainerStyle={styles.charList}
+              ItemSeparatorComponent={() => <View style={{ width: CHAR_GAP }} />}
+              renderItem={({ item, index }) => {
+                const isSelected = selectedChar === index;
+                return (
+                  <Pressable onPress={() => setSelectedChar(index)}>
+                    <View style={[styles.charSlot, isSelected && styles.charSlotSelected]}>
+                      <Image
+                        source={item.source}
+                        style={[styles.charImage, !isSelected && styles.charImageDim]}
+                        resizeMode="contain"
+                      />
+                      {isSelected && <View style={styles.charSelectedDot} />}
+                    </View>
+                  </Pressable>
+                );
+              }}
+            />
+            <Text style={styles.scrollHint}>← เลื่อนเพื่อดูตัวละครทั้งหมด →</Text>
+
+            {/* Secret Family Code */}
+            <View style={styles.fieldGroup}>
+              <Text style={styles.sectionLabel}>Secret Family Code</Text>
+              <View style={styles.inputWrapper}>
+                <Text style={styles.inputIcon}>🔑</Text>
+                <TextInput
+                  style={[styles.input, codeFocused && styles.inputFocused]}
+                  placeholder="••••••"
+                  placeholderTextColor={COLORS.outlineVariant}
+                  value={guildCode}
+                  onChangeText={setGuildCode}
+                  onFocus={() => setCodeFocused(true)}
+                  onBlur={() => setCodeFocused(false)}
+                  secureTextEntry
+                  autoCapitalize="none"
+                />
+                <View style={styles.blinkDot} />
               </View>
             </View>
-          </Pressable>
-        </View>
 
-        {/* Footer links */}
-        <View style={styles.footer}>
-          <Pressable>
-            <Text style={styles.footerSecondary}>Wanna create family?</Text>
-          </Pressable>
-          <Pressable onPress={() => router.push('/family_create' as any)}>
-            <Text style={styles.footerPrimary}>[ CREATE NEW FAMILY ]</Text>
-          </Pressable>
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
-  </ImageBackground>
-);
+            {/* Quest Start Button */}
+            <Pressable
+              onPressIn={() => setBtnPressed(true)}
+              onPressOut={() => setBtnPressed(false)}
+              onPress={handleQuestStart}
+            >
+              <View style={styles.btnOuter}>
+                <View style={styles.btnShadowLayer} />
+                <View style={[styles.btn, btnPressed && styles.btnPressed]}>
+                  <Text style={styles.btnText}>QUEST START</Text>
+                </View>
+              </View>
+            </Pressable>
+          </View>
+
+          {/* Footer links */}
+          <View style={styles.footer}>
+            <Pressable onPress={() => router.push('/family_create' as any)}>
+              <Text style={styles.footerSecondary}>[ Wanna create family? ]</Text>
+              <Text style={styles.footerPrimary}>[ CREATE NEW FAMILY ]</Text>
+            </Pressable>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </ImageBackground>
+  );
 }
 
 const styles = StyleSheet.create({
@@ -244,8 +298,6 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     marginTop: 6,
   },
-
-  // Card
   card: {
     width: '100%',
     maxWidth: 420,
@@ -384,6 +436,7 @@ const styles = StyleSheet.create({
   // Footer
   footer: {
     alignItems: 'center',
+    alignContent: 'center',
     marginTop: 28,
     gap: 10,
   },
@@ -391,6 +444,7 @@ const styles = StyleSheet.create({
     fontFamily: 'SpaceGrotesk-Bold',
     fontSize: 11,
     fontWeight: '700',
+    textAlign: 'center',
     color: COLORS.onSurfaceVariant,
     letterSpacing: 2,
     textTransform: 'uppercase',
@@ -399,6 +453,7 @@ const styles = StyleSheet.create({
     fontFamily: 'SpaceGrotesk-Bold',
     fontSize: 12,
     fontWeight: '900',
+    marginTop: 10,
     color: COLORS.primary,
     letterSpacing: 3,
     textTransform: 'uppercase',

@@ -97,10 +97,10 @@ export default function LoginScreen() {
 
             {/* Username */}
             <View style={styles.fieldGroup}>
-              <Text style={styles.label}>USERNAME</Text>
+              <Text style={styles.label}>USER_EMAIL</Text>
               <TextInput
                 style={[styles.input, userFocused && styles.inputFocused]}
-                placeholder="USERNAME"
+                placeholder="example@gmail.com"
                 placeholderTextColor={COLORS.outlineVariant}
                 value={username}
                 onChangeText={setUsername}
