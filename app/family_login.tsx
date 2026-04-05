@@ -109,6 +109,13 @@ export default function FamilyLoginScreen() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('ไม่พบ user');
 
+      // ดึง display_name จาก profiles
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('display_name')
+        .eq('id', user.id)
+        .single();
+
       // หา family จาก pin_code ตรงๆ
       const { data: family, error: familyError } = await supabase
         .from('families')
@@ -129,12 +136,12 @@ export default function FamilyLoginScreen() {
           family_id: family.id,
           member_role: 'member',
           avatar_key: `cha${selectedChar + 1}`,
-          member_nickname: '',
+          member_nickname: profile?.display_name ?? '',
         });
 
       if (joinError) throw joinError;
 
-      router.replace('/family' as any);
+      router.replace('/app/(app)/family.tsx' as any);
 
     } catch (err: any) {
       Alert.alert('Error', err.message);
@@ -213,6 +220,7 @@ export default function FamilyLoginScreen() {
                   onChangeText={setGuildCode}
                   onFocus={() => setCodeFocused(true)}
                   onBlur={() => setCodeFocused(false)}
+                  keyboardType='number-pad'
                   secureTextEntry
                   autoCapitalize="none"
                 />
