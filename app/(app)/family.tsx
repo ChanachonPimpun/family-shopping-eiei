@@ -1,13 +1,15 @@
 // app/family.tsx
+import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   Image,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
-  View,
+  View
 } from 'react-native';
 import { supabase } from '../../lib/supabase';
 
@@ -127,25 +129,6 @@ export default function FamilyScreen() {
 
   return (
     <View style={styles.root}>
-      {/* TopAppBar */}
-      <View style={styles.topBar}>
-        <Pressable style={styles.topBarIcon}>
-          <Text style={styles.topBarIconText}>☰</Text>
-        </Pressable>
-        <Text style={styles.topBarTitle}>FAMILY_GROCERY</Text>
-        <View style={styles.topBarAvatar}>
-          <Image
-            source={
-              CHARACTERS[
-                members.find(m => m.user_id === currentUserId)?.avatar_key ?? 'cha1'
-              ]
-            }
-            style={styles.topBarAvatarImg}
-            resizeMode="contain"
-          />
-        </View>
-      </View>
-
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
@@ -231,6 +214,65 @@ export default function FamilyScreen() {
             </View>
           </View>
         </View>
+
+        {/* Leave Family */}
+        <Pressable
+          onPress={() => {
+            Alert.alert(
+              'ออกจากครอบครัว',
+              'ต้องการออกจากครอบครัวนี้ไหม?',
+              [
+                { text: 'ยกเลิก', style: 'cancel' },
+                {
+                  text: 'ออก', style: 'destructive',
+                  onPress: async () => {
+                    const { data: { user } } = await supabase.auth.getUser();
+                    if (!user) return;
+
+                    // เช็คว่าเป็น owner ไหม
+                    const { data: myMember } = await supabase
+                      .from('family_members')
+                      .select('member_role, family_id')
+                      .eq('user_id', user.id)
+                      .single();
+
+                    if (myMember?.member_role === 'owner') {
+                      // หาสมาชิกคนอื่นที่เข้ามาก่อน (joined_at น้อยสุด)
+                      const { data: nextOwner } = await supabase
+                        .from('family_members')
+                        .select('user_id')
+                        .eq('family_id', myMember.family_id)
+                        .neq('user_id', user.id)
+                        .order('joined_at', { ascending: true })
+                        .limit(1)
+                        .single();
+
+                      if (nextOwner) {
+                        // โอน ownership
+                        await supabase
+                          .from('family_members')
+                          .update({ member_role: 'owner' })
+                          .eq('user_id', nextOwner.user_id);
+                      }
+                    }
+
+                    // ลบตัวเองออก
+                    await supabase
+                      .from('family_members')
+                      .delete()
+                      .eq('user_id', user.id);
+
+                    router.push('/family_login' as any);
+                  }
+                },
+              ]
+            );
+          }}
+        >
+          <View style={styles.leaveBtn}>
+            <Text style={styles.leaveBtnText}>⚠ LEAVE FAMILY</Text>
+          </View>
+        </Pressable>
       </ScrollView>
     </View>
   );
@@ -246,50 +288,6 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.background,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-
-  // TopBar
-  topBar: {
-    height: 64,
-    backgroundColor: COLORS.background,
-    borderBottomWidth: 4,
-    borderBottomColor: COLORS.surface,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    shadowColor: COLORS.surfaceHighest,
-    shadowOffset: { width: 4, height: 4 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 6,
-  },
-  topBarIcon: {
-    padding: 8,
-  },
-  topBarIconText: {
-    color: COLORS.primary,
-    fontSize: 20,
-  },
-  topBarTitle: {
-    fontFamily: 'SpaceGrotesk-Bold',
-    fontSize: 18,
-    fontWeight: '900',
-    color: COLORS.primary,
-    letterSpacing: -0.5,
-    textTransform: 'uppercase',
-  },
-  topBarAvatar: {
-    width: 40,
-    height: 40,
-    backgroundColor: COLORS.surfaceBright,
-    borderWidth: 2,
-    borderColor: COLORS.primary,
-    overflow: 'hidden',
-  },
-  topBarAvatarImg: {
-    width: '100%',
-    height: '100%',
   },
 
   // Scroll
@@ -505,5 +503,20 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     color: COLORS.onSurface,
     letterSpacing: -1,
+  },
+  leaveBtn: {
+    borderWidth: 2,
+    borderColor: COLORS.error,
+    paddingVertical: 16,
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  leaveBtnText: {
+    fontFamily: 'SpaceGrotesk-Bold',
+    fontSize: 13,
+    fontWeight: '900',
+    color: COLORS.error,
+    letterSpacing: 3,
+    textTransform: 'uppercase',
   },
 });

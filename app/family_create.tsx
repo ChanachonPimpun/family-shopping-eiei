@@ -123,7 +123,7 @@ export default function FamilyCreateScreen() {
       Alert.alert(
         'สำเร็จ!',
         `สร้าง Guild "${familyName.trim()}" แล้ว!`,
-        [{ text: 'OK', onPress: () => router.replace('/family' as any) }]
+        [{ text: 'OK', onPress: () => router.replace('/(app)/family' as any) }]
       );
     } catch (err: any) {
       Alert.alert('Error', err.message);

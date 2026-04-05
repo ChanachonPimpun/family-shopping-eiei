@@ -1,5 +1,5 @@
-import { router } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useRef, useState } from 'react';
 import {
   Alert,
   FlatList,
@@ -15,6 +15,7 @@ import {
   View
 } from 'react-native';
 import { supabase } from '../lib/supabase';
+
 
 const COLORS = {
   background: '#0e0e0e',
@@ -72,9 +73,12 @@ export default function FamilyLoginScreen() {
   const [btnPressed, setBtnPressed] = useState(false);
   const flatListRef = useRef<FlatList>(null);
 
-  useEffect(() => {
+  // เช็คทุกครั้งที่มาหน้านี้
+  useFocusEffect(
+  useCallback(() => {
     checkExistingFamily();
-  }, []);
+  }, [])
+);
 
   async function checkExistingFamily() {
     try {
@@ -85,7 +89,7 @@ export default function FamilyLoginScreen() {
         .from('family_members')
         .select('family_id')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
       console.log('user.id:', user.id);
       console.log('member:', JSON.stringify(member));
@@ -141,7 +145,7 @@ export default function FamilyLoginScreen() {
 
       if (joinError) throw joinError;
 
-      router.replace('/app/(app)/family.tsx' as any);
+      router.replace('/(app)/family' as any);
 
     } catch (err: any) {
       Alert.alert('Error', err.message);
