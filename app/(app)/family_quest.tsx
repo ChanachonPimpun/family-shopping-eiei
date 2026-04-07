@@ -1,4 +1,4 @@
-// app/(app)/family_quest.tsx
+import { useHeaderHeight } from '@react-navigation/elements';
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -99,6 +99,7 @@ export default function FamilyQuestScreen() {
   const [sortBy, setSortBy] = useState<SortType>('manual');
   const [showSortMenu, setShowSortMenu] = useState(false);
   const [addBtnPressed, setAddBtnPressed] = useState(false);
+  const headerHeight = useHeaderHeight();
 
   useEffect(() => {
     loadData();
@@ -218,6 +219,7 @@ export default function FamilyQuestScreen() {
     <KeyboardAvoidingView
       style={styles.root}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={headerHeight}
     >
       <ScrollView
         style={styles.scroll}
@@ -382,7 +384,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   // Scroll
-  scroll: { flex: 1 },
+  scroll: { flexGrow: 1 },
   scrollContent: {
     paddingHorizontal: 20,
     paddingTop: 24,
@@ -525,7 +527,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: COLORS.surface,
-    padding: 16,
+    padding: 13,
     gap: 12,
   },
   itemRowBought: {
@@ -537,8 +539,8 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.surfaceBright,
   },
   checkbox: {
-    width: 28,
-    height: 28,
+    width: 40,
+    height: 40,
     borderWidth: 3,
     borderColor: COLORS.outline,
     backgroundColor: COLORS.surface,
