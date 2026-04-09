@@ -1,4 +1,3 @@
-// app/(app)/_layout.tsx
 import { router, Tabs } from 'expo-router';
 import { useState } from 'react';
 import {
@@ -39,6 +38,7 @@ const CHARACTERS: Record<string, any> = {
 function AppHeader() {
   const [avatarKey, setAvatarKey] = useState('cha1');
   const [showMenu, setShowMenu] = useState(false);
+  const [familyName, setFamilyName] = useState('FAMILY_GROCERY');
 
   // ดึง avatar ของ user ปัจจุบัน
   useState(() => {
@@ -46,11 +46,22 @@ function AppHeader() {
       if (!user) return;
       supabase
         .from('family_members')
-        .select('avatar_key')
+        .select('avatar_key, family_id')
         .eq('user_id', user.id)
         .maybeSingle()
-        .then(({ data }) => {
-          if (data?.avatar_key) setAvatarKey(data.avatar_key);
+        .then(({ data: member }) => {
+          if (member?.avatar_key) setAvatarKey(member.avatar_key);
+          if (member?.family_id) {
+            // ดึง family_name
+            supabase
+              .from('families')
+              .select('family_name')
+              .eq('id', member.family_id)
+              .single()
+              .then(({ data: family }) => {
+                if (family?.family_name) setFamilyName(family.family_name.toUpperCase());
+              });
+          }
         });
     });
   });
@@ -72,9 +83,9 @@ function AppHeader() {
     <>
       <View style={styles.header}>
         <Pressable style={styles.headerIcon}>
-          <Text style={styles.headerIconText}>☰</Text>
+          {/* <Text style={styles.headerIconText}>☰</Text> */}
         </Pressable>
-        <Text style={styles.headerTitle}>FAMILY_GROCERY</Text>
+        <Text style={styles.headerTitle}>{familyName}</Text>
         <Pressable
           style={styles.avatarBtn}
           onPress={() => setShowMenu(true)}
@@ -183,13 +194,10 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   headerIcon: { padding: 8 },
-  headerIconText: { color: '#9cff93', fontSize: 20 },
   headerTitle: {
     fontFamily: 'SpaceGrotesk-Bold',
     fontSize: 18,
-    fontWeight: '900',
     color: '#9cff93',
-    letterSpacing: -0.5,
     textTransform: 'uppercase',
   },
   avatarBtn: {

@@ -1,4 +1,3 @@
-// app/register.tsx
 import { router } from 'expo-router';
 import { useState } from 'react';
 import {
@@ -156,7 +155,7 @@ export default function RegisterScreen() {
                 <Text style={styles.label}>Password</Text>
                 <TextInput
                   style={inputStyle('password')}
-                  placeholder="••••••••"
+                  placeholder="••••••"
                   placeholderTextColor={COLORS.outlineVariant}
                   value={password}
                   onChangeText={setPassword}

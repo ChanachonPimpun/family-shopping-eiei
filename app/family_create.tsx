@@ -1,4 +1,3 @@
-// app/family_create.tsx
 import { router } from 'expo-router';
 import { useState } from 'react';
 import {
@@ -148,7 +147,7 @@ export default function FamilyCreateScreen() {
             <Pressable onPress={() => router.back()} style={styles.backBtn}>
               <Text style={styles.backIcon}>←</Text>
             </Pressable>
-            <Text style={styles.headerTitle}>NEW_HOUSEHOLD</Text>
+            <Text style={styles.headerTitle}>Join Family</Text>
             <Text style={styles.headerIcon}>🏰</Text>
           </View>
 
@@ -162,9 +161,9 @@ export default function FamilyCreateScreen() {
               />
             </View>
             <Text style={styles.heroTitle}>
-              FOUND A <Text style={styles.heroTitleAccent}>LEGACY</Text>
+              CREATE <Text style={styles.heroTitleAccent}>FAMILY</Text>
             </Text>
-            <Text style={styles.heroSub}>Establish your domain in the void.</Text>
+            <Text style={styles.heroSub}>start shopping list with your family members</Text>
           </View>
 
           {/* card */}

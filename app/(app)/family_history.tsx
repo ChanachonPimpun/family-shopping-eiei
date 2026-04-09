@@ -39,7 +39,7 @@ type ComparedItem = {
   item_name: string;
   currentPrice: number | null;
   lastPrice: number | null;
-  change: number | null; // % เปลี่ยนแปลง
+  change: number | null;
   status: 'up' | 'down' | 'stable' | 'new';
 };
 
@@ -58,18 +58,15 @@ function compareItems(records: ItemRecord[]): ComparedItem[] {
   const currentMonth = getCurrentMonth();
   const lastMonth = getLastMonth();
 
-  // แยกตามเดือน
   const thisMonthRecords = records.filter(r => r.item_month === currentMonth);
   const lastMonthRecords = records.filter(r => r.item_month === lastMonth);
 
-  // group ตามชื่อ เอาอันล่าสุด
   const getLatest = (items: ItemRecord[], name: string) => {
     return items
       .filter(i => i.item_name === name)
       .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())[0];
   };
 
-  // รวมชื่อทั้งหมดจากเดือนนี้
   const names = [...new Set(thisMonthRecords.map(r => r.item_name))];
 
   return names.map(name => {
@@ -104,10 +101,10 @@ export default function FamilyHistoryScreen() {
   const [loading, setLoading] = useState(true);
 
   useFocusEffect(
-  useCallback(() => {
-    loadHistory();
-  }, [])
-);
+    useCallback(() => {
+      loadHistory();
+    }, [])
+  );
 
   async function loadHistory() {
     try {
@@ -155,7 +152,6 @@ export default function FamilyHistoryScreen() {
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
-      {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Price History</Text>
         <View style={styles.headerAccent} />
@@ -168,40 +164,32 @@ export default function FamilyHistoryScreen() {
         </View>
       )}
 
-      {/* Item Cards */}
       <View style={styles.list}>
         {items.map((item, index) => {
           const isUp = item.status === 'up';
           const isDown = item.status === 'down';
           const isNew = item.status === 'new';
-          const isStable = item.status === 'stable';
 
           const accentColor = isUp ? COLORS.error : isDown ? COLORS.primary : COLORS.outline;
           const badgeBorderColor = isUp ? COLORS.error : isDown ? COLORS.primary : COLORS.outline;
           const badgeTextColor = isUp ? COLORS.error : isDown ? COLORS.primary : COLORS.outline;
 
           const badgeText = isNew ? 'NEW'
-            : isStable ? 'STABLE'
+            : item.status === 'stable' ? 'STABLE'
             : `${item.change! > 0 ? '+' : ''}${item.change!.toFixed(0)}%`;
 
           const trendIcon = isUp ? '↑' : isDown ? '↓' : '—';
 
           return (
             <View key={index} style={styles.card}>
-              {/* Top row */}
               <View style={styles.cardTop}>
                 <Text style={styles.itemName}>{item.item_name}</Text>
                 <View style={[styles.badge, { borderColor: badgeBorderColor }]}>
-                  <Text style={[styles.badgeTrend, { color: badgeTextColor }]}>
-                    {trendIcon}
-                  </Text>
-                  <Text style={[styles.badgeText, { color: badgeTextColor }]}>
-                    {badgeText}
-                  </Text>
+                  <Text style={[styles.badgeTrend, { color: badgeTextColor }]}>{trendIcon}</Text>
+                  <Text style={[styles.badgeText, { color: badgeTextColor }]}>{badgeText}</Text>
                 </View>
               </View>
 
-              {/* Price comparison */}
               <View style={styles.priceRow}>
                 <View style={styles.priceBox}>
                   <Text style={styles.priceLabel}>Last Time</Text>
@@ -240,8 +228,6 @@ const styles = StyleSheet.create({
     paddingTop: 24,
     paddingBottom: 40,
   },
-
-  // Header
   header: {
     marginBottom: 24,
     gap: 8,
@@ -259,8 +245,6 @@ const styles = StyleSheet.create({
     height: 4,
     backgroundColor: COLORS.primary,
   },
-
-  // Empty
   emptyState: {
     alignItems: 'center',
     paddingVertical: 60,
@@ -279,13 +263,9 @@ const styles = StyleSheet.create({
     color: COLORS.outlineVariant,
     textAlign: 'center',
   },
-
-  // List
   list: {
     gap: 12,
   },
-
-  // Card
   card: {
     backgroundColor: COLORS.surface,
     padding: 20,
@@ -325,8 +305,6 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     letterSpacing: 1,
   },
-
-  // Price comparison
   priceRow: {
     flexDirection: 'row',
     gap: 12,

@@ -1,4 +1,3 @@
-// app/login.tsx
 import { router } from 'expo-router';
 import { useState } from 'react';
 import {
@@ -116,7 +115,7 @@ export default function LoginScreen() {
               <Text style={styles.label}>PASSWORD</Text>
               <TextInput
                 style={[styles.input, passFocused && styles.inputFocused]}
-                placeholder="PASSWORD"
+                placeholder="••••••"
                 placeholderTextColor={COLORS.outlineVariant}
                 value={password}
                 onChangeText={setPassword}
@@ -144,9 +143,9 @@ export default function LoginScreen() {
 
           {/* Register */}
           <View style={styles.footer}>
-            <Text style={styles.footerText}>New to the world? </Text>
+            <Text style={styles.footerText}>Dont have an account? </Text>
             <Pressable onPress={() => router.push('/register')}>
-              <Text style={styles.footerLink}>Register Hero</Text>
+              <Text style={styles.footerLink}>Register Here</Text>
             </Pressable>
           </View>
         </ScrollView>

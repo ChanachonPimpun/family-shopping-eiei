@@ -1,4 +1,3 @@
-// app/family.tsx
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {

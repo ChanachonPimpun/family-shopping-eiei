@@ -237,7 +237,8 @@ export default function FamilyQuestScreen() {
             <Text style={styles.budgetValue}>
               {totalPrice.toFixed(2)} <Text style={styles.budgetUnit}>THB</Text>
             </Text>
-            <Text style={styles.budgetLabel}>รวมราคาของทั้งหมด</Text>
+            <Text style={styles.budgetLabel}>Total price
+            </Text>
           </View>
         </View>
 
