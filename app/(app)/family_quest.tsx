@@ -1,5 +1,6 @@
 import { useHeaderHeight } from '@react-navigation/elements';
-import { useEffect, useState } from 'react';
+import { useFocusEffect } from 'expo-router';
+import { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -101,9 +102,11 @@ export default function FamilyQuestScreen() {
   const [addBtnPressed, setAddBtnPressed] = useState(false);
   const headerHeight = useHeaderHeight();
 
-  useEffect(() => {
+  useFocusEffect(
+  useCallback(() => {
     loadData();
-  }, []);
+  }, [])
+);
 
   async function loadData() {
     try {

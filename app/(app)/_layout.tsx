@@ -9,6 +9,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { supabase } from '../../lib/supabase';
 
 const CHARACTERS: Record<string, any> = {
@@ -81,6 +82,7 @@ function AppHeader() {
 
   return (
     <>
+    <SafeAreaView edges={['top']} style={{ backgroundColor: '#0e0e0e' }}>
       <View style={styles.header}>
         <Pressable style={styles.headerIcon}>
           {/* <Text style={styles.headerIconText}>☰</Text> */}
@@ -97,6 +99,7 @@ function AppHeader() {
           />
         </Pressable>
       </View>
+      </SafeAreaView>
 
       {/* Profile Menu Modal */}
       <Modal
