@@ -1,50 +1,67 @@
 # Welcome to your Expo app 👋
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Mini project: แอปสำหรับเพิ่มลิสต์รายการซื้อของระจำเดือนของครอบครัว
+ - มีระบบ login, register สมัครบัญชีเพื่อเข้าสู้ระบบ
+ - มีระบบ สร้างครอบครัวใหม่เพื่อบันทึกรายการและ ระบบเข้าร่วมครอบครัวของคนที่สร้างผ่านการใส่รหัสที่คนสร้างเป็นคนตั้งขึ้น
+ - มีระบบเลือก อวาตาร์ ของตัวเองเพื่อแสดงในรายชื่อสมาชิก
+ - มีระบเพิ่ม, ลบ รายการของที่ต้องซื้อ สามารถใส่ชื่อและราคาได้
+ - มีระบบเปรียบเทียบราคาของ ของที่ชื่อเหมือนกัน โดยเปรียบเทียบจากของเดือนนี้กับเดือนที่แล้ว แสดงเป็นเปอร์เซ็น
+</br>
+———————————————————————————————————————————————
+</br>
 
-## Get started
+Start screen
 
-1. Install dependencies
+</br>
+<img src="https://github.com/user-attachments/assets/9aeade10-67c5-40b3-9ef8-448121adb475" width="300" />
+———————————————————————————————————————————————
+</br>
 
-   ```bash
-   npm install
-   ```
+Login
 
-2. Start the app
+</br>
+<img src="https://github.com/user-attachments/assets/0e2969db-b7f8-487e-b7ec-e440eb7d9138" width="300" />
+———————————————————————————————————————————————
+</br>
 
-   ```bash
-   npx expo start
-   ```
+Create Account
 
-In the output, you'll find options to open the app in a
+</br>
+<img src="https://github.com/user-attachments/assets/41e4ed78-8b21-4a11-a96f-85e562eaf54a" width="300" />
+———————————————————————————————————————————————
+</br>
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+Family Login
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+</br>
+<img src="https://github.com/user-attachments/assets/5f9b4236-68f0-4645-b42b-925e8396d3b3" width="300" />
+———————————————————————————————————————————————
+</br>
 
-## Get a fresh project
+Create Family
 
-When you're ready, run:
+</br>
+<img src="https://github.com/user-attachments/assets/43355eae-896a-4e3b-9b84-9c37787fbb85" width="300" />
+———————————————————————————————————————————————
+</br>
 
-```bash
-npm run reset-project
-```
+Family Members
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+</br>
+<img src="https://github.com/user-attachments/assets/1fe8acb4-d855-47fe-aa29-26e0a347476b" width="300" />
+———————————————————————————————————————————————
+</br>
 
-## Learn more
+Shopping list
 
-To learn more about developing your project with Expo, look at the following resources:
+</br>
+<img src="https://github.com/user-attachments/assets/91f8e225-0b54-4ec1-a9dc-91cdc4ffad24" width="300" />
+<img src="https://github.com/user-attachments/assets/070abd17-ef83-46ac-aab9-5834f3a8c2d6" width="300" />
+———————————————————————————————————————————————
+</br>
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+Compare
 
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+</br>
+<img src="https://github.com/user-attachments/assets/5ba61000-2353-4ba6-81e8-b26cb17b6b18" width="300" />
+———————————————————————————————————————————————
