@@ -245,6 +245,47 @@ export default function FamilyQuestScreen() {
           </View>
         </View>
 
+        {/* Add item */}
+        <View style={styles.addSection}>
+          <Text style={styles.addSectionTitle}>ADD NEW QUEST</Text>
+          <View style={styles.addInputRow}>
+            <View style={[styles.addInputWrapper, { flex: 3 }]}>
+              <TextInput
+                style={styles.addInput}
+                placeholder="ENTER ITEM NAME..."
+                placeholderTextColor={COLORS.outline}
+                value={itemName}
+                onChangeText={setItemName}
+                autoCapitalize="characters"
+                autoCorrect={false}
+              />
+            </View>
+            <View style={[styles.addInputWrapper, { flex: 1 }]}>
+              <TextInput
+                style={[styles.addInput, { textAlign: 'center' }]}
+                placeholder="THB?"
+                placeholderTextColor={COLORS.outline}
+                value={itemPrice}
+                onChangeText={setItemPrice}
+                keyboardType="numeric"
+              />
+            </View>
+          </View>
+          <Pressable
+            onPressIn={() => setAddBtnPressed(true)}
+            onPressOut={() => setAddBtnPressed(false)}
+            onPress={handleAddItem}
+            disabled={!itemName.trim()}
+          >
+            <View style={styles.addBtnOuter}>
+              <View style={styles.addBtnShadow} />
+              <View style={[styles.addBtn, addBtnPressed && styles.addBtnPressed, !itemName.trim() && { opacity: 0.5 }]}>
+                <Text style={styles.addBtnText}>ADD ITEM +</Text>
+              </View>
+            </View>
+          </Pressable>
+        </View>
+
         {/* Sort */}
         <View style={styles.sortRow}>
           <Pressable
@@ -330,47 +371,6 @@ export default function FamilyQuestScreen() {
             );
           })}
         </View>
-
-        {/* Add item */}
-        <View style={styles.addSection}>
-          <Text style={styles.addSectionTitle}>ADD NEW QUEST</Text>
-          <View style={styles.addInputRow}>
-            <View style={[styles.addInputWrapper, { flex: 3 }]}>
-              <TextInput
-                style={styles.addInput}
-                placeholder="ENTER ITEM NAME..."
-                placeholderTextColor={COLORS.outline}
-                value={itemName}
-                onChangeText={setItemName}
-                autoCapitalize="characters"
-                autoCorrect={false}
-              />
-            </View>
-            <View style={[styles.addInputWrapper, { flex: 1 }]}>
-              <TextInput
-                style={[styles.addInput, { textAlign: 'center' }]}
-                placeholder="THB?"
-                placeholderTextColor={COLORS.outline}
-                value={itemPrice}
-                onChangeText={setItemPrice}
-                keyboardType="numeric"
-              />
-            </View>
-          </View>
-          <Pressable
-            onPressIn={() => setAddBtnPressed(true)}
-            onPressOut={() => setAddBtnPressed(false)}
-            onPress={handleAddItem}
-            disabled={!itemName.trim()}
-          >
-            <View style={styles.addBtnOuter}>
-              <View style={styles.addBtnShadow} />
-              <View style={[styles.addBtn, addBtnPressed && styles.addBtnPressed, !itemName.trim() && { opacity: 0.5 }]}>
-                <Text style={styles.addBtnText}>ADD ITEM +</Text>
-              </View>
-            </View>
-          </Pressable>
-        </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -445,6 +445,7 @@ const styles = StyleSheet.create({
   // Sort
   sortRow: {
     marginBottom: 16,
+    marginTop: 16,
   },
   sortBtn: {
     flexDirection: 'row',
