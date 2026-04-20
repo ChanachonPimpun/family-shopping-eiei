@@ -7,6 +7,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -14,6 +15,7 @@ import {
   View
 } from 'react-native';
 import { supabase } from '../../lib/supabase';
+
 
 const COLORS = {
   background: '#0e0e0e',
@@ -101,12 +103,19 @@ export default function FamilyQuestScreen() {
   const [showSortMenu, setShowSortMenu] = useState(false);
   const [addBtnPressed, setAddBtnPressed] = useState(false);
   const headerHeight = useHeaderHeight();
+  const [refreshing, setRefreshing] = useState(false);
 
   useFocusEffect(
-  useCallback(() => {
-    loadData();
-  }, [])
-);
+    useCallback(() => {
+      loadData();
+    }, [])
+  );
+
+  async function handleRefresh() {
+    setRefreshing(true);
+    await loadItems(familyId!)
+    setRefreshing(false);
+  }
 
   async function loadData() {
     try {
@@ -229,6 +238,15 @@ export default function FamilyQuestScreen() {
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor={COLORS.primary}
+            colors={[COLORS.primary]}
+          />
+        }
+
       >
         {/* Header */}
         <View style={styles.listHeader}>

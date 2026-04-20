@@ -2,12 +2,14 @@ import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
-  View,
+  View
 } from 'react-native';
 import { supabase } from '../../lib/supabase';
+
 
 const COLORS = {
   background: '#0e0e0e',
@@ -99,12 +101,19 @@ function compareItems(records: ItemRecord[]): ComparedItem[] {
 export default function FamilyHistoryScreen() {
   const [items, setItems] = useState<ComparedItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
       loadHistory();
     }, [])
   );
+
+  async function handleRefresh() {
+    setRefreshing(true);
+    await loadHistory()
+    setRefreshing(false);
+  }
 
   async function loadHistory() {
     try {
@@ -151,18 +160,28 @@ export default function FamilyHistoryScreen() {
       style={styles.root}
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={handleRefresh}
+          tintColor={COLORS.primary}
+          colors={[COLORS.primary]}
+        />
+      }
     >
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Price History</Text>
         <View style={styles.headerAccent} />
       </View>
 
-      {items.length === 0 && (
-        <View style={styles.emptyState}>
-          <Text style={styles.emptyText}>ยังไม่มีประวัติ</Text>
-          <Text style={styles.emptySubText}>ซื้อของแล้วติ๊กถูกเพื่อบันทึกประวัติ</Text>
-        </View>
-      )}
+      {
+        items.length === 0 && (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyText}>ยังไม่มีประวัติ</Text>
+            <Text style={styles.emptySubText}>ซื้อของแล้วติ๊กถูกเพื่อบันทึกประวัติ</Text>
+          </View>
+        )
+      }
 
       <View style={styles.list}>
         {items.map((item, index) => {
@@ -176,7 +195,7 @@ export default function FamilyHistoryScreen() {
 
           const badgeText = isNew ? 'NEW'
             : item.status === 'stable' ? 'STABLE'
-            : `${item.change! > 0 ? '+' : ''}${item.change!.toFixed(0)}%`;
+              : `${item.change! > 0 ? '+' : ''}${item.change!.toFixed(0)}%`;
 
           const trendIcon = isUp ? '↑' : isDown ? '↓' : '—';
 
@@ -208,7 +227,7 @@ export default function FamilyHistoryScreen() {
           );
         })}
       </View>
-    </ScrollView>
+    </ScrollView >
   );
 }
 

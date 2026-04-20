@@ -5,12 +5,14 @@ import {
   Alert,
   Image,
   Pressable,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
   View
 } from 'react-native';
 import { supabase } from '../../lib/supabase';
+
 
 const COLORS = {
   background: '#0e0e0e',
@@ -74,12 +76,19 @@ export default function FamilyScreen() {
   const [familyInfo, setFamilyInfo] = useState<FamilyInfo | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   useFocusEffect(
-  useCallback(() => {
-    loadData();
-  }, [])
-);
+    useCallback(() => {
+      loadData();
+    }, [])
+  );
+
+  async function handleRefresh() {
+    setRefreshing(true);
+    await loadData()
+    setRefreshing(false);
+  }
 
   async function loadData() {
     try {
@@ -134,6 +143,14 @@ export default function FamilyScreen() {
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor={COLORS.primary}
+            colors={[COLORS.primary]}
+          />
+        }
       >
         {/* Header */}
         <View style={styles.sectionHeader}>
