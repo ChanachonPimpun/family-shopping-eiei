@@ -227,7 +227,6 @@ export default function FamilyScreen() {
           </View>
           <View style={styles.codeBox}>
             <View>
-              <Text style={styles.codeLabel}>FAMILY CODE</Text>
               <Text style={styles.codeValue}>{familyInfo?.pin_code ?? '------'}</Text>
             </View>
           </View>
@@ -505,15 +504,6 @@ const styles = StyleSheet.create({
     borderLeftWidth: 4,
     borderLeftColor: COLORS.tertiary,
     padding: 16,
-  },
-  codeLabel: {
-    fontFamily: 'SpaceGrotesk-Bold',
-    fontSize: 9,
-    fontWeight: '700',
-    color: COLORS.outline,
-    letterSpacing: 3,
-    textTransform: 'uppercase',
-    marginBottom: 4,
   },
   codeValue: {
     fontFamily: 'SpaceGrotesk-Bold',

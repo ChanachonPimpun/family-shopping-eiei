@@ -62,7 +62,7 @@ const CHARACTERS: Record<string, any> = {
   cha21: require('../../assets/images/cha21.png'),
 };
 
-type SortType = 'manual' | 'name' | 'price_desc' | 'price_asc';
+type SortType = 'manual' | 'latest' | 'name' | 'price_desc' | 'price_asc';
 
 type Item = {
   id: string;
@@ -71,10 +71,13 @@ type Item = {
   is_bought: boolean;
   created_by: string;
   item_month: string;
+  frequency: string;
+  updated_at: string;
 };
 
 const SORT_OPTIONS: { label: string; value: SortType }[] = [
   { label: 'เพิ่มก่อนหลัง', value: 'manual' },
+  { label: 'ล่าสุด', value: 'latest' },
   { label: 'ชื่อ', value: 'name' },
   { label: 'ราคามาก → น้อย', value: 'price_desc' },
   { label: 'ราคาน้อย → มาก', value: 'price_asc' },
@@ -104,6 +107,8 @@ export default function FamilyQuestScreen() {
   const [addBtnPressed, setAddBtnPressed] = useState(false);
   const headerHeight = useHeaderHeight();
   const [refreshing, setRefreshing] = useState(false);
+  const [frequency, setFrequency] = useState<'weekly' | 'monthly'>('monthly');
+  const [filterFrequency, setFilterFrequency] = useState<'all' | 'weekly' | 'monthly'>('all');
 
   useFocusEffect(
     useCallback(() => {
@@ -142,9 +147,16 @@ export default function FamilyQuestScreen() {
   }
 
   async function loadItems(fid: string) {
-    const { data, error } = await supabase
+    const now = new Date();
+    const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    const monthAgo = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate()).toISOString();
+
+    console.log('now:', now.toISOString());
+    console.log('weekAgo:', weekAgo);
+
+    const { data } = await supabase
       .from('shopping_items')
-      .select('id, item_name, current_price, is_bought, created_by, item_month')
+      .select('id, item_name, current_price, is_bought, created_by, item_month, frequency, updated_at')
       .eq('family_id', fid)
       .order('created_at', { ascending: true });
 
@@ -163,6 +175,7 @@ export default function FamilyQuestScreen() {
         is_bought: false,
         created_by: currentUserId,
         item_month: getCurrentMonth(),
+        frequency: frequency,
       });
 
     if (error) {
@@ -176,16 +189,16 @@ export default function FamilyQuestScreen() {
   }
 
   async function handleToggle(item: Item) {
-    const { error } = await supabase
-      .from('shopping_items')
-      .update({
-        is_bought: !item.is_bought,
-        last_price: item.current_price,
-      })
-      .eq('id', item.id);
+  await supabase
+    .from('shopping_items')
+    .update({
+      is_bought: !item.is_bought,
+      last_price: item.current_price,
+    })
+    .eq('id', item.id);
 
-    if (!error && familyId) await loadItems(familyId);
-  }
+  if (familyId) await loadItems(familyId);
+}
 
   async function handleDelete(id: string) {
     Alert.alert('ลบรายการ', 'ต้องการลบรายการนี้ไหม?', [
@@ -201,13 +214,16 @@ export default function FamilyQuestScreen() {
 
   function getSortedItems() {
     const currentMonth = getCurrentMonth();
-    const thisMonth = items.filter(i => i.item_month === currentMonth);
-    const prevMonths = items.filter(i => i.item_month !== currentMonth);
+    let filtered = filterFrequency === 'all' ? items : items.filter(i => i.frequency === filterFrequency);
+
+    const thisMonth = filtered.filter(i => i.item_month === currentMonth);
+    const prevMonths = filtered.filter(i => i.item_month !== currentMonth);
 
     const sortFn = (a: Item, b: Item) => {
       if (sortBy === 'name') return a.item_name.localeCompare(b.item_name);
       if (sortBy === 'price_desc') return (b.current_price ?? 0) - (a.current_price ?? 0);
       if (sortBy === 'price_asc') return (a.current_price ?? 0) - (b.current_price ?? 0);
+      if (sortBy === 'latest') return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
       return 0;
     };
 
@@ -289,6 +305,24 @@ export default function FamilyQuestScreen() {
               />
             </View>
           </View>
+          <View style={styles.freqToggle}>
+            <Pressable
+              style={[styles.freqToggleBtn, frequency === 'weekly' && styles.freqToggleBtnActive]}
+              onPress={() => setFrequency('weekly')}
+            >
+              <Text style={[styles.freqToggleText, frequency === 'weekly' && styles.freqToggleTextActive]}>
+                Weekly
+              </Text>
+            </Pressable>
+            <Pressable
+              style={[styles.freqToggleBtn, frequency === 'monthly' && styles.freqToggleBtnActive]}
+              onPress={() => setFrequency('monthly')}
+            >
+              <Text style={[styles.freqToggleText, frequency === 'monthly' && styles.freqToggleTextActive]}>
+                Monthly
+              </Text>
+            </Pressable>
+          </View>
           <Pressable
             onPressIn={() => setAddBtnPressed(true)}
             onPressOut={() => setAddBtnPressed(false)}
@@ -305,7 +339,7 @@ export default function FamilyQuestScreen() {
         </View>
 
         {/* Sort */}
-        <View style={styles.sortRow}>
+        <View style={styles.controlRow}>
           <Pressable
             style={styles.sortBtn}
             onPress={() => setShowSortMenu(!showSortMenu)}
@@ -316,6 +350,20 @@ export default function FamilyQuestScreen() {
             </Text>
             <Text style={styles.sortBtnIcon}>▾</Text>
           </Pressable>
+
+          <View style={styles.freqFilter}>
+            {(['all', 'weekly', 'monthly'] as const).map(f => (
+              <Pressable
+                key={f}
+                style={[styles.freqFilterBtn, filterFrequency === f && styles.freqFilterBtnActive]}
+                onPress={() => setFilterFrequency(f)}
+              >
+                <Text style={[styles.freqFilterText, filterFrequency === f && styles.freqFilterTextActive]}>
+                  {f === 'all' ? 'ALL' : f === 'weekly' ? 'W' : 'M'}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
         </View>
 
         {/* Sort menu */}
@@ -373,6 +421,14 @@ export default function FamilyQuestScreen() {
                         <Text style={styles.oldMonthText}>📌 {getMonthLabel(item.item_month)}</Text>
                       </View>
                     )}
+                    <View style={[
+                      styles.freqBadge,
+                      item.frequency === 'weekly' ? styles.freqBadgeWeekly : styles.freqBadgeMonthly
+                    ]}>
+                      <Text style={styles.freqBadgeText}>
+                        {item.frequency === 'weekly' ? 'W' : 'M'}
+                      </Text>
+                    </View>
                   </View>
                   {item.current_price != null && (
                     <Text style={[styles.itemPrice, item.is_bought && styles.itemPriceBought]}>
@@ -660,6 +716,7 @@ const styles = StyleSheet.create({
   },
   addBtnOuter: {
     position: 'relative',
+    marginBottom: 24
   },
   addBtnShadow: {
     position: 'absolute',
@@ -687,5 +744,80 @@ const styles = StyleSheet.create({
     color: COLORS.onPrimary,
     letterSpacing: 4,
     textTransform: 'uppercase',
+  },
+  controlRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  freqFilter: {
+    flexDirection: 'row',
+    borderWidth: 2,
+    borderColor: COLORS.outline,
+  },
+  freqFilterBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    backgroundColor: COLORS.surfaceHighest,
+  },
+  freqFilterBtnActive: {
+    backgroundColor: COLORS.primary,
+  },
+  freqFilterText: {
+    fontFamily: 'SpaceGrotesk-Bold',
+    fontSize: 10,
+    fontWeight: '900',
+    color: COLORS.outline,
+    letterSpacing: 1,
+  },
+  freqFilterTextActive: {
+    color: COLORS.onPrimary,
+  },
+  freqBadge: {
+    paddingHorizontal: 5,
+    paddingVertical: 2,
+    marginLeft: 4,
+  },
+  freqBadgeWeekly: {
+    backgroundColor: COLORS.secondary,
+  },
+  freqBadgeMonthly: {
+    backgroundColor: COLORS.surfaceHighest,
+  },
+  freqBadgeText: {
+    fontFamily: 'SpaceGrotesk-Bold',
+    fontSize: 9,
+    fontWeight: '900',
+    color: COLORS.onSurface,
+    letterSpacing: 1,
+  },
+  freqToggle: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 4,
+  },
+  freqToggleBtn: {
+    flex: 1,
+    paddingVertical: 10,
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: COLORS.outline,
+    backgroundColor: COLORS.surfaceLowest,
+  },
+  freqToggleBtnActive: {
+    borderColor: COLORS.primary,
+    backgroundColor: COLORS.surfaceHighest,
+  },
+  freqToggleText: {
+    fontFamily: 'SpaceGrotesk-Bold',
+    fontSize: 11,
+    fontWeight: '700',
+    color: COLORS.outline,
+    letterSpacing: 2,
+    textTransform: 'uppercase',
+  },
+  freqToggleTextActive: {
+    color: COLORS.primary,
   },
 });
