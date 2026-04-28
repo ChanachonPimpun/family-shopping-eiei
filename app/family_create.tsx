@@ -104,7 +104,14 @@ export default function FamilyCreateScreen() {
         .select()
         .single();
 
-      if (familyError) throw familyError;
+      if (familyError) {
+        if (familyError.code === '23505') {
+          Alert.alert('Error', 'รหัสนี้ถูกใช้ไปแล้ว กรุณาเลือกรหัสใหม่');
+        } else {
+          Alert.alert('Error', familyError.message);
+        }
+        return;
+      }
 
       // insert ลง family_members
       const { error: memberError } = await supabase
@@ -258,7 +265,7 @@ export default function FamilyCreateScreen() {
                   <View style={styles.btnShadow} />
                   <View style={[styles.btn, btnPressed && styles.btnPressed, loading && { opacity: 0.6 }]}>
                     <Text style={styles.btnText}>
-                      {loading ? 'CREATING...' : 'START NEW GUILD ⚔'}
+                      {loading ? 'CREATING...' : 'START NEW FAMILY ⚔'}
                     </Text>
                   </View>
                 </View>

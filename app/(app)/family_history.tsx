@@ -211,7 +211,7 @@ export default function FamilyHistoryScreen() {
 
               <View style={styles.priceRow}>
                 <View style={styles.priceBox}>
-                  <Text style={styles.priceLabel}>Last Time</Text>
+                  <Text style={styles.priceLabel}>Last Month</Text>
                   <Text style={styles.priceValue}>
                     {item.lastPrice != null ? `${item.lastPrice.toFixed(2)} THB` : '—'}
                   </Text>

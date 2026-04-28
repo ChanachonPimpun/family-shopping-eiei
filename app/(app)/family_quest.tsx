@@ -230,7 +230,9 @@ export default function FamilyQuestScreen() {
     return [...thisMonth.sort(sortFn), ...prevMonths.sort(sortFn)];
   }
 
-  const totalPrice = items.reduce((sum, i) => sum + (i.current_price ?? 0), 0);
+  const totalPrice = items
+  .filter(i => i.is_bought)
+  .reduce((sum, i) => sum + (i.current_price ?? 0), 0);
   const boughtPrice = items.filter(i => i.is_bought).reduce((sum, i) => sum + (i.current_price ?? 0), 0);
   const currentMonth = getCurrentMonth();
   const sortedItems = getSortedItems();
